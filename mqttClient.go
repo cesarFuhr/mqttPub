@@ -6,15 +6,21 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	exit := pleaseLeave()
+	err := bootstrap()
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	publisher := Publisher{}
-	publisher.Connect("tcp://0.0.0.0:1883")
+	publisher.Connect(os.Getenv("MQTT_BROKER_URL"))
 
 	ticker := time.NewTicker(5 * time.Second)
+	exit := pleaseLeave()
 
 	for {
 		select {
@@ -27,6 +33,14 @@ func main() {
 			publisher.Publish("testTopic", "testing")
 		}
 	}
+}
+
+func bootstrap() error {
+	err := godotenv.Load()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func pleaseLeave() chan struct{} {
