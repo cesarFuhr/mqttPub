@@ -3,13 +3,17 @@ package main
 import (
 	"fmt"
 
-	"github.com/google/uuid"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
+	"github.com/google/uuid"
 )
-
 
 type Publisher struct {
 	c MQTT.Client
+}
+
+type Message struct {
+	Topic string
+	Msg   string
 }
 
 func (p *Publisher) Connect(brokerUrl string) {
@@ -23,7 +27,6 @@ func (p *Publisher) Connect(brokerUrl string) {
 		panic(token.Error())
 	}
 }
-
 
 func (p *Publisher) Publish(topic, msg string) {
 	token := p.c.Publish(topic, 0, false, msg)
