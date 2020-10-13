@@ -11,26 +11,36 @@ import (
 )
 
 func main() {
-	err := bootstrap()
-	if err != nil {
+	if err := bootstrap(); err != nil {
 		fmt.Println(err)
 	}
 
-	publisher := Publisher{}
-	publisher.Connect(os.Getenv("MQTT_BROKER_URL"))
+	p := Publisher{}
+	run(p)
+}
 
-	ticker := time.NewTicker(5 * time.Second)
+func run(pub Publisher) {
+	pub.Connect(os.Getenv("MQTT_BROKER_URL"))
+
 	exit := pleaseLeave()
+	finish := make(chan struct{})
 
+	go startPublishing(pub, exit, finish)
+	<-finish
+}
+
+func startPublishing(pub Publisher, exit chan struct{}, finish chan struct{}) {
+	ticker := time.NewTicker(5 * time.Second)
 	for {
 		select {
 		case <-exit:
 			fmt.Println("Goodbye...")
-			publisher.c.Disconnect(250)
+			pub.c.Disconnect(250)
+			close(finish)
 			return
 		case <-ticker.C:
 			fmt.Println("Published!")
-			publisher.Publish("testTopic", "testing")
+			pub.Publish("testTopic", "testing")
 		}
 	}
 }
