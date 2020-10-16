@@ -1,5 +1,9 @@
 package main
 
+import (
+	"time"
+)
+
 type OBDStreamer struct {
 	channels []chan Message
 }
@@ -10,6 +14,13 @@ func (s *OBDStreamer) Register(c chan Message) error {
 }
 
 func (s *OBDStreamer) Start() error {
+	ticker := time.NewTicker(time.Second)
+	go func(ticker *time.Ticker) {
+		for {
+			<-ticker.C
+			s.event("testTopic", "testing")
+		}
+	}(ticker)
 	return nil
 }
 

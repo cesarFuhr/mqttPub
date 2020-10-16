@@ -30,7 +30,7 @@ func TestRegister(t *testing.T) {
 				Msg:   "value",
 			}
 
-			c := make(chan Message)
+			c := make(chan Message, 100)
 			streamer.Register(c)
 
 			go streamer.event(want.Topic, want.Msg)

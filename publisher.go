@@ -28,7 +28,7 @@ func (p *Publisher) Connect(brokerUrl string) {
 	}
 }
 
-func (p *Publisher) Publish(topic, msg string) {
-	token := p.c.Publish(topic, 0, false, msg)
+func (p *Publisher) Publish(m Message) {
+	token := p.c.Publish(m.Topic, 0, false, m.Msg)
 	token.Wait()
 }

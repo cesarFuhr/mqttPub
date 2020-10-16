@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
-	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -30,7 +30,11 @@ func run(pub Publisher) {
 }
 
 func startPublishing(pub Publisher, exit chan struct{}, finish chan struct{}) {
-	ticker := time.NewTicker(5 * time.Second)
+	bufSize, _ := strconv.Atoi(os.Getenv("OBD_STREAM_BUFFER_SIZE"))
+	messages := make(chan Message, bufSize)
+	streamer := OBDStreamer{}
+	_ = streamer.Register(messages)
+	_ = streamer.Start()
 	for {
 		select {
 		case <-exit:
@@ -38,9 +42,9 @@ func startPublishing(pub Publisher, exit chan struct{}, finish chan struct{}) {
 			pub.c.Disconnect(250)
 			close(finish)
 			return
-		case <-ticker.C:
+		case msg := <-messages:
 			fmt.Println("Published!")
-			pub.Publish("testTopic", "testing")
+			pub.Publish(msg)
 		}
 	}
 }
